@@ -1,5 +1,6 @@
 // @flow
 
+import PropTypes from 'prop-types';
 import React from 'react';
 import type { Node } from 'react';
 import ReactDOM from 'react-dom';
@@ -20,6 +21,10 @@ export type Props = {
  * @ignore - internal component.
  */
 class Portal extends React.Component<Props> {
+  static contextTypes = {
+    document: PropTypes.object,
+  };
+
   static defaultProps = {
     open: false,
   };
@@ -42,12 +47,19 @@ class Portal extends React.Component<Props> {
     this.unrenderLayer();
   }
 
+  getDocument() {
+    const { document: contextDocument } = this.context;
+    return contextDocument || document;
+  }
+
   getLayer() {
+    const doc = this.getDocument();
+
     if (!this.layer) {
-      this.layer = document.createElement('div');
+      this.layer = doc.createElement('div');
       this.layer.setAttribute('data-mui-portal', 'true');
-      if (document.body && this.layer) {
-        document.body.appendChild(this.layer);
+      if (doc.body && this.layer) {
+        doc.body.appendChild(this.layer);
       }
     }
 
@@ -66,8 +78,10 @@ class Portal extends React.Component<Props> {
       ReactDOM.unmountComponentAtNode(this.layer);
     }
 
-    if (document.body) {
-      document.body.removeChild(this.layer);
+    const doc = this.getDocument();
+
+    if (doc.body) {
+      doc.body.removeChild(this.layer);
     }
     this.layer = null;
   }
